@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaBot Logistics - Контролен панел</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex overflow-hidden font-sans">
+
+    <aside class="w-64 bg-slate-800 text-white flex flex-col">
+        <div class="p-4 border-b border-slate-700">
+            <h1 class="text-xl font-bold">PharmaBot 🤖</h1>
+            <p class="text-xs text-slate-400 mt-1">v.0.2 (Refined Prototype)</p>
+        </div>
+        <div class="p-4">
+            <button onclick="toggleTaskModal()" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded font-bold shadow transition">
+                + Нова Задача
+            </button>
+        </div>
+        <nav class="flex-1 px-4 space-y-2">
+            <a href="#" class="block p-2 bg-blue-600 rounded text-sm font-semibold">📍 2D Карта (На живо)</a>
+            <a href="#" class="block p-2 hover:bg-slate-700 rounded text-sm">📦 Активни поръчки (12)</a>
+            <a href="#" class="block p-2 hover:bg-slate-700 rounded text-sm">⚙️ Управление на флотилията</a>
+            <a href="#" class="block p-2 hover:bg-slate-700 rounded text-sm text-red-400">⚠️ Дневник на инциденти</a>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-sm">
+            <p>Вписан като:</p>
+            <p class="font-bold">Оператор (2FA ✓)</p>
+            <button onclick="confirmLogout()" class="block mt-2 text-red-400 hover:text-red-300 text-xs underline cursor-pointer">Изход от системата</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col">
+        <header class="bg-white shadow px-6 py-4 flex justify-between items-center z-10">
+            <h2 class="text-lg font-semibold text-gray-700">Мониторинг на склада - Сектор А</h2>
+            <div class="flex gap-2">
+                <button onclick="toggleGeoFenceMode()" id="btnGeo" class="bg-orange-100 text-orange-700 px-4 py-2 rounded border border-orange-300 hover:bg-orange-200 text-sm font-bold transition">
+                    🚧 Режим: Очертай Зона
+                </button>
+                <button onclick="triggerAlarm()" class="bg-red-100 text-red-600 px-4 py-2 rounded border border-red-300 hover:bg-red-200 text-sm font-bold transition">
+                    ⚠️ Тест: Температурна Аларма
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 p-6 flex flex-col gap-4">
+            <div class="flex gap-6 text-sm bg-white p-3 rounded shadow-sm border border-gray-200 items-center">
+                <span class="font-bold text-gray-600 uppercase text-xs tracking-wider">Филтри на картата:</span>
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input type="checkbox" checked onchange="toggleFilter('moving', this.checked)" class="w-4 h-4 text-green-600 rounded"> 
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div> В движение
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input type="checkbox" checked onchange="toggleFilter('charging', this.checked)" class="w-4 h-4 text-yellow-500 rounded"> 
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div> Зарежда
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input type="checkbox" checked onchange="toggleFilter('error', this.checked)" class="w-4 h-4 text-red-600 rounded"> 
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div> Проблем / Блокиран
+                </label>
+            </div>
+
+            <div id="mapArea" class="flex-1 bg-white border-4 border-dashed border-gray-300 rounded-lg relative overflow-hidden shadow-sm transition-colors cursor-default" onclick="addGeoFence(event)">
+                <div class="absolute top-4 left-4 text-gray-400 font-bold uppercase tracking-widest pointer-events-none">Интерактивна 2D Карта</div>
+                
+                <div class="robot-moving absolute top-1/4 left-1/3 group cursor-pointer transition-opacity duration-300">
+                    <div class="w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-md animate-pulse"></div>
+                    <div class="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-800 text-white text-xs p-2 rounded shadow-lg z-20">
+                        <p><strong>ID:</strong> BOT-042</p>
+                        <p><strong>Батерия:</strong> 85%</p>
+                        <p><strong>Товар:</strong> Ваксини (Партида #11)</p>
+                        <p><strong>Темп:</strong> 4.2°C</p>
+                    </div>
+                </div>
+
+                <div class="robot-charging absolute bottom-1/4 right-1/4 group cursor-pointer transition-opacity duration-300">
+                    <div class="w-5 h-5 bg-yellow-500 rounded-full border-2 border-white shadow-md"></div>
+                    <div class="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-800 text-white text-xs p-2 rounded shadow-lg z-20">
+                        <p><strong>ID:</strong> BOT-015</p>
+                        <p><strong>Батерия:</strong> 22% (Зарежда се)</p>
+                    </div>
+                </div>
+                
+                <div id="zonesContainer"></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="logoutModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 class="text-xl font-bold mb-2">Изход от системата?</h3>
+            <p class="text-gray-600 mb-6 text-sm">Сигурни ли сте, че искате да прекратите сесията? Всички незапазени зони за опасност може да бъдат изчистени.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeLogoutModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-bold">Отказ</button>
+                <a href="login.html" class="px-4 py-2 bg-red-600 text-white font-bold rounded hover:bg-red-700">Да, излез</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="taskModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 class="text-xl font-bold mb-4">Назначаване на нова задача</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Избери Поръчка</label>
+                    <select class="w-full border border-gray-300 rounded p-2">
+                        <option>Партида #12 (Антибиотици) -> Рампа 2</option>
+                        <option>Партида #13 (Инсулин) -> Рампа 1</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Избери Робот</label>
+                    <select class="w-full border border-gray-300 rounded p-2">
+                        <option>Автоматичен избор (Оптимален)</option>
+                        <option>BOT-015 (Свободен, Батерия 90%)</option>
+                        <option>BOT-022 (Свободен, Батерия 65%)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="toggleTaskModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Отказ</button>
+                <button onclick="toggleTaskModal(); alert('Задачата е изпратена към робота!');" class="px-4 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700">Изпрати</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alarmModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-2xl max-w-md w-full border-t-8 border-red-600">
+            <h3 class="text-2xl font-bold text-red-600 mb-2">КРИТИЧНА АЛАРМА</h3>
+            <p class="text-gray-700 mb-4"><strong>Робот BOT-019</strong> отчита нарушение на "студената верига". Текуща температура на товара: <span class="text-red-600 font-bold">12.5°C</span> (Макс: 8.0°C).</p>
+            <div class="flex gap-4 justify-end">
+                <button onclick="closeAlarm()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Игнорирай</button>
+                <button onclick="closeAlarm()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold">Пренасочи към Карантина</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Логика за филтрите
+        function toggleFilter(type, isVisible) {
+            let elements = document.querySelectorAll('.robot-' + type);
+            elements.forEach(el => {
+                if(isVisible) {
+                    el.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    el.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+        }
+
+        // Логика за потвърждение на изход
+        function confirmLogout() { document.getElementById('logoutModal').classList.remove('hidden'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.add('hidden'); }
+
+        // Логика за Температурната аларма
+        function triggerAlarm() { document.getElementById('alarmModal').classList.remove('hidden'); }
+        function closeAlarm() { document.getElementById('alarmModal').classList.add('hidden'); }
+        
+        // Логика за Модала за задачи
+        function toggleTaskModal() { document.getElementById('taskModal').classList.toggle('hidden'); }
+
+        // Логика за Geo-fencing
+        let geoMode = false;
+        function toggleGeoFenceMode() {
+            geoMode = !geoMode;
+            let btn = document.getElementById('btnGeo');
+            let map = document.getElementById('mapArea');
+            if(geoMode) {
+                btn.classList.replace('bg-orange-100', 'bg-orange-500');
+                btn.classList.replace('text-orange-700', 'text-white');
+                map.classList.replace('cursor-default', 'cursor-crosshair');
+                map.classList.add('bg-orange-50');
+            } else {
+                btn.classList.replace('bg-orange-500', 'bg-orange-100');
+                btn.classList.replace('text-white', 'text-orange-700');
+                map.classList.replace('cursor-crosshair', 'cursor-default');
+                map.classList.remove('bg-orange-50');
+            }
+        }
+
+        function addGeoFence(e) {
+            if(!geoMode) return;
+            let mapRect = document.getElementById('mapArea').getBoundingClientRect();
+            let x = e.clientX - mapRect.left - 50;
+            let y = e.clientY - mapRect.top - 50;
+
+            let zone = document.createElement('div');
+            zone.className = "absolute w-24 h-24 bg-red-500/20 border-2 border-red-500 border-dashed rounded flex items-center justify-center transition-all animate-pulse cursor-pointer";
+            zone.style.left = x + 'px';
+            zone.style.top = y + 'px';
+            zone.innerHTML = '<span class="text-red-700 font-bold text-xs bg-white/90 px-1 rounded text-center pointer-events-none">Опасна<br>Зона</span>';
+            
+            zone.onclick = function(ev) { ev.stopPropagation(); this.remove(); };
+            document.getElementById('zonesContainer').appendChild(zone);
+            toggleGeoFenceMode();
+        }
+    </script>
+</body>
+</html>

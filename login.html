@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - PharmaBot Logistics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 h-screen flex items-center justify-center font-sans">
+
+    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md relative overflow-hidden">
+        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/90 z-10 flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+            <p id="loadingText" class="text-blue-800 font-bold animate-pulse">Установяване на защитена връзка...</p>
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-600">PharmaBot 🤖</h1>
+            <p class="text-gray-500 mt-2">Система за логистика и мониторинг</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Потребителско име</label>
+                <input type="text" id="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="v.koychev">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Парола</label>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="********">
+            </div>
+
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <label class="block text-sm font-bold text-blue-800 mb-1">🔒 2FA Код за сигурност</label>
+                <input type="text" id="twoFactor" placeholder="123 456" class="block w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-blue-500 text-center tracking-widest text-lg font-mono">
+            </div>
+
+            <div class="pt-4 flex flex-col gap-3">
+                <button type="button" onclick="simulateLogin('dashboard.html', 'Оторизиране на Оператор...')" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition">
+                    Вход като Оператор / Мениджър
+                </button>
+                
+                <button type="button" onclick="simulateLogin('mobile-handoff.html', 'Оторизиране на Шофьор...')" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                    Вход като Шофьор (Рампа)
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function simulateLogin(targetUrl, loadMessage) {
+            // Проверка дали е въведен 2FA код (за реализъм)
+            const twoFactorInput = document.getElementById('twoFactor').value;
+            if (twoFactorInput.length < 3) {
+                alert("Моля, въведете валиден 2FA код за достъп до системата.");
+                return;
+            }
+
+            // Показване на екрана за зареждане
+            const overlay = document.getElementById('loadingOverlay');
+            const loadText = document.getElementById('loadingText');
+            
+            loadText.innerText = loadMessage;
+            overlay.classList.remove('hidden');
+
+            // Симулиране на мрежово забавяне от 1.5 секунди преди пренасочване
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

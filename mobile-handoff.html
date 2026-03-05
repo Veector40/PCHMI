@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaBot - Шофьор</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-200 h-screen flex items-center justify-center font-sans">
+
+    <div id="mobileApp" class="w-full max-w-sm h-[800px] max-h-screen bg-white shadow-2xl overflow-hidden flex flex-col relative border-4 border-gray-800 rounded-[2rem] transition-colors duration-300">
+        
+        <header id="appHeader" class="bg-blue-600 text-white p-4 pt-8 flex justify-between items-center transition-colors duration-300">
+            <div>
+                <h1 class="font-bold text-lg">Товарна Рампа 4</h1>
+                <p class="text-xs text-blue-100">Шофьор: Иван Димитров</p>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <button onclick="toggleContrast()" class="text-xs bg-black/20 px-2 py-1 rounded hover:bg-black/40 border border-white/30">☀️ Контраст</button>
+            </div>
+        </header>
+
+        <main id="appMain" class="flex-1 p-4 bg-gray-50 flex flex-col gap-4 overflow-y-auto transition-colors duration-300">
+            
+            <div id="cardInfo" class="bg-white p-4 rounded-lg shadow border border-gray-200 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Очаквана пратка</span>
+                    <span id="statusBadge" class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded border border-yellow-300">Пристигаща</span>
+                </div>
+                <h2 id="cardTitle" class="font-bold text-xl text-gray-800">Партида #11 (Ваксини)</h2>
+                <p id="cardSub" class="text-sm text-gray-600 mt-1 font-medium">Доставя се от: Робот BOT-042</p>
+            </div>
+
+            <div id="step1" class="bg-white p-4 rounded-lg shadow border-2 border-blue-400 text-center transition-all">
+                <h3 id="textStep1" class="font-bold text-gray-800 mb-2">Стъпка 1: Идентификация</h3>
+                <button onclick="simulateScan()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded font-bold text-sm transition flex justify-center items-center gap-2 shadow-md">
+                    <span class="text-xl">📷</span> Сканирай QR код
+                </button>
+            </div>
+
+            <div id="step2" class="bg-gray-100 p-4 rounded-lg shadow border-2 border-gray-300 text-center transition-all relative overflow-hidden">
+                <div id="overlayLock" class="absolute inset-0 bg-gray-200/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                    <span class="bg-gray-800 text-white text-xs px-2 py-1 rounded font-bold shadow">Изисква Стъпка 1</span>
+                </div>
+                <h3 id="textStep2" class="font-bold text-gray-500 mb-2">Стъпка 2: Доказателство</h3>
+                <button id="btnPhoto" onclick="simulatePhoto()" class="w-full border-2 border-gray-400 text-gray-600 py-3 rounded font-bold text-sm flex items-center justify-center gap-2 transition bg-white" disabled>
+                    <span class="text-xl">📸</span> Снимай палета
+                </button>
+            </div>
+
+            <div class="mt-auto pb-4">
+                <button id="btnConfirm" onclick="finishHandoff()" class="w-full bg-gray-300 text-gray-600 py-4 rounded-lg font-bold text-lg shadow border border-gray-400 transition-all cursor-not-allowed" disabled>
+                    Потвърди Експедиция
+                </button>
+            </div>
+            
+            <div class="text-center">
+                <a href="#" onclick="confirmLogoutMobile()" class="text-sm text-red-500 underline font-bold">Изход от профила</a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // КОРИГИРАНО: Режим "Висок Контраст" за слънчево време на рампата
+        let isHighContrast = false;
+        function toggleContrast() {
+            isHighContrast = !isHighContrast;
+            let main = document.getElementById('appMain');
+            let info = document.getElementById('cardInfo');
+            let title = document.getElementById('cardTitle');
+            let header = document.getElementById('appHeader');
+
+            if(isHighContrast) {
+                main.classList.replace('bg-gray-50', 'bg-slate-900');
+                info.classList.replace('bg-white', 'bg-slate-800');
+                info.classList.replace('border-gray-200', 'border-slate-600');
+                title.classList.replace('text-gray-800', 'text-white');
+                document.getElementById('cardSub').classList.replace('text-gray-600', 'text-gray-300');
+                document.getElementById('textStep1').classList.replace('text-gray-800', 'text-black');
+                header.classList.replace('bg-blue-600', 'bg-black');
+            } else {
+                main.classList.replace('bg-slate-900', 'bg-gray-50');
+                info.classList.replace('bg-slate-800', 'bg-white');
+                info.classList.replace('border-slate-600', 'border-gray-200');
+                title.classList.replace('text-white', 'text-gray-800');
+                document.getElementById('cardSub').classList.replace('text-gray-300', 'text-gray-600');
+                document.getElementById('textStep1').classList.replace('text-black', 'text-gray-800');
+                header.classList.replace('bg-black', 'bg-blue-600');
+            }
+        }
+
+        function confirmLogoutMobile() {
+            if(confirm("Сигурни ли сте, че искате да излезете? Текущият напредък по пратката ще бъде запазен.")) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function simulateScan() {
+            alert('Успешно сканиран QR код от BOT-042!');
+            document.getElementById('step1').classList.replace('border-blue-400', 'border-green-400');
+            document.getElementById('step1').classList.add('bg-green-50');
+            
+            // Отключваме стъпка 2
+            let step2 = document.getElementById('step2');
+            document.getElementById('overlayLock').classList.add('hidden'); // Премахваме визуалната ключалка
+            step2.classList.replace('bg-gray-100', 'bg-white');
+            step2.classList.replace('border-gray-300', 'border-blue-400');
+            document.getElementById('textStep2').classList.replace('text-gray-500', 'text-gray-800');
+            
+            let btnPhoto = document.getElementById('btnPhoto');
+            btnPhoto.disabled = false;
+            btnPhoto.classList.replace('text-gray-600', 'text-blue-700');
+            btnPhoto.classList.replace('border-gray-400', 'border-blue-600');
+            btnPhoto.classList.replace('bg-white', 'bg-blue-50');
+            btnPhoto.classList.add('hover:bg-blue-100', 'cursor-pointer');
+        }
+
+        function simulatePhoto() {
+            alert('Снимката е направена и качена успешно!');
+            document.getElementById('step2').classList.replace('border-blue-400', 'border-green-400');
+            document.getElementById('step2').classList.replace('bg-white', 'bg-green-50');
+            document.getElementById('btnPhoto').classList.replace('bg-blue-50', 'bg-white');
+
+            // Отключваме финала
+            let btnConfirm = document.getElementById('btnConfirm');
+            btnConfirm.disabled = false;
+            btnConfirm.classList.remove('bg-gray-300', 'text-gray-600', 'border-gray-400', 'cursor-not-allowed');
+            btnConfirm.classList.add('bg-green-600', 'text-white', 'hover:bg-green-700', 'shadow-xl', 'cursor-pointer');
+        }
+
+        function finishHandoff() {
+            document.getElementById('statusBadge').className = 'bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded border border-green-300';
+            document.getElementById('statusBadge').innerText = 'Изпратена';
+            alert('Експедицията е потвърдена! Роботът е освободен за нови задачи.');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
